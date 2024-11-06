@@ -103,49 +103,76 @@ searchInput.addEventListener("keyup", function () {
   });
 });
 
-$(".slider").slick({
-  autoplay: true,
-  autoplaySpeed: 0,
-  speed: 2500,
-  slidesToShow: 8,
-  cssEase: "linear",
-  centerMode: true,
-  arrows: false,
-  responsive: [
-    {
-      breakpoint: 1200, // For large tablets and small desktops
-      settings: {
-        slidesToShow: 6,
-        slidesToScroll: 1,
+// Debounce function
+function debounce(func, wait) {
+  let timeout;
+  return function () {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => func.apply(this, arguments), wait);
+  };
+}
+
+// Initialize Slick slider
+function initializeSlider() {
+  $(".slider").slick({
+    autoplay: true,
+    autoplaySpeed: 0,
+    speed: 2500,
+    slidesToShow: 8,
+    cssEase: "linear",
+    centerMode: true,
+    arrows: false,
+    responsive: [
+      {
+        breakpoint: 1200,
+        settings: {
+          slidesToShow: 6,
+          slidesToScroll: 1,
+        },
       },
-    },
-    {
-      breakpoint: 992, // For tablets and small screens
-      settings: {
-        slidesToShow: 4,
-        slidesToScroll: 1,
+      {
+        breakpoint: 992,
+        settings: {
+          slidesToShow: 4,
+          slidesToScroll: 1,
+        },
       },
-    },
-    {
-      breakpoint: 768, // For portrait tablets and medium-sized mobile screens
-      settings: {
-        slidesToShow: 3,
-        slidesToScroll: 1,
+      {
+        breakpoint: 768,
+        settings: {
+          slidesToShow: 3,
+          slidesToScroll: 1,
+        },
       },
-    },
-    {
-      breakpoint: 576, // For small mobile screens
-      settings: {
-        slidesToShow: 2,
-        slidesToScroll: 1,
+      {
+        breakpoint: 576,
+        settings: {
+          slidesToShow: 2,
+          slidesToScroll: 1,
+        },
       },
-    },
-    {
-      breakpoint: 400, // For extra small mobile screens
-      settings: {
-        slidesToShow: 2,
-        slidesToScroll: 1,
+      {
+        breakpoint: 400,
+        settings: {
+          slidesToShow: 2,
+          slidesToScroll: 1,
+        },
       },
-    },
-  ],
+    ],
+  });
+}
+
+// Initialize slider on document ready
+$(document).ready(function () {
+  initializeSlider();
+
+  // Reinitialize slider on resize with debounce
+  $(window).on(
+    "resize",
+    debounce(function () {
+      // Destroy and reinitialize
+      $(".slider").slick("unslick");
+      initializeSlider();
+    }, 250) // Adjust debounce wait time (in ms) as needed
+  );
 });

@@ -181,6 +181,11 @@ body {
 }
 
 @media only screen and (max-width: 600px) {
+
+    .slider {
+        margin: 0px auto;
+    }
+
     .product-table td:first-child {
         width: 40%;
     }
