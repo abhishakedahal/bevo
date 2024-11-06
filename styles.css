@@ -181,3 +181,9 @@ body {
 .hidden {
     display: none;
 }
+
+@media only screen and (max-width: 600px) {
+    .product-table td:first-child {
+        width: 40%;
+    }
+}
