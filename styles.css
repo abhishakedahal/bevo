@@ -6,10 +6,8 @@ body {
     padding: 0;
 }
 
-.background {
-    img {
-        max-width: 100%;
-    }
+.background img {
+    max-width: 100%;
 }
 
 .slider {
@@ -32,10 +30,10 @@ body {
 .heading-container {
     text-align: center;
     margin-bottom: 64px;
+}
 
-    p {
-        color: #495A69;
-    }
+.heading-container p {
+    color: #495A69;
 }
 
 
