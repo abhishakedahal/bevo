@@ -1,107 +1,140 @@
-// const searchInput = document.getElementById("search");
-// const table = document.getElementById("beverageTable");
-// const rows = table.getElementsByTagName("tr");
+// Helper function to format the price with commas and "Rs."
+function formatPrice(price) {
+  console.log("Original Price:", price);
 
-// searchInput.addEventListener("keyup", function () {
-//   const searchTerm = this.value.toLowerCase();
-//   let lastCategory = null;
-//   let lastSubcategory = null;
+  // Ensure the price is a valid number
+  const formattedPrice = parseFloat(price.replace(/[^0-9.-]+/g, "")); // Remove any non-numeric characters before parsing
+  if (isNaN(formattedPrice)) {
+    return "Rs. 0"; // Return "Rs. 0" if the price is not a valid number
+  }
+  return "Rs. " + formattedPrice.toLocaleString(); // Format with commas
+}
 
-//   for (let i = 1; i < rows.length; i++) {
-//     const row = rows[i];
-//     const isCategory = row.classList.contains("category");
-//     const isSubcategory = row.classList.contains("subcategory");
+// Load and parse CSV file
+async function loadCSVData() {
+  const response = await fetch("products.csv");
+  const csvText = await response.text();
 
-//     if (isCategory) {
-//       lastCategory = row;
-//       row.classList.add("hidden");
-//       continue;
-//     }
+  // Parse CSV data
+  const parsedData = Papa.parse(csvText, {
+    header: true,
+    skipEmptyLines: true,
+  }).data;
 
-//     if (isSubcategory) {
-//       lastSubcategory = row;
-//       row.classList.add("hidden");
-//       continue;
-//     }
+  // Organize data into categories and subcategories
+  return formatData(parsedData);
+}
 
-//     const cells = row.getElementsByTagName("td");
-//     let found = false;
+// Format parsed data into categories and subcategories
+function formatData(data) {
+  const categories = {};
 
-//     for (let j = 0; j < cells.length; j++) {
-//       if (cells[j].textContent.toLowerCase().indexOf(searchTerm) > -1) {
-//         found = true;
-//         break;
-//       }
-//     }
+  data.forEach((row) => {
+    const { category, subcategory, brand, size, hsCode, price } = row;
 
-//     if (found) {
-//       row.classList.remove("hidden");
-//       if (lastCategory) lastCategory.classList.remove("hidden");
-//       if (lastSubcategory) lastSubcategory.classList.remove("hidden");
-//     } else {
-//       row.classList.add("hidden");
-//     }
-//   }
-// });
+    // Check if the category exists, if not, initialize it
+    if (!categories[category]) {
+      categories[category] = { name: category, subcategories: {} };
+    }
 
-const searchInput = document.getElementById("search");
-const table = document.getElementById("beverageTable");
-const categories = document.querySelectorAll(".category");
-const subcategories = document.querySelectorAll(".subcategory");
+    // Check if the subcategory exists within the category
+    if (!categories[category].subcategories[subcategory]) {
+      categories[category].subcategories[subcategory] = {
+        name: subcategory,
+        products: [],
+      };
+    }
 
-searchInput.addEventListener("keyup", function () {
-  const searchTerm = this.value.toLowerCase();
+    // Add product to the corresponding subcategory
+    categories[category].subcategories[subcategory].products.push({
+      brand,
+      size,
+      hsCode,
+      price,
+    });
+  });
 
-  // Loop through each category
+  // Convert categories object to an array of objects
+  return Object.values(categories).map((category) => ({
+    name: category.name,
+    subcategories: Object.values(category.subcategories),
+  }));
+}
+
+// Function to generate HTML for the product list, with "No products found" message
+function generateProductList(categories) {
+  if (categories.length === 0) {
+    return '<div class="no-results">No products matching the search term.</div>';
+  }
+
+  let html = '<div class="content" id="beverageTable">';
+
+  html += `
+            <table class="product-table">
+              <thead>
+                <tr>
+                  <th>Brand</th>
+                  <th>Size</th>
+                  <th>HS CODE</th>
+                  <th>MRP</th>
+                </tr>
+              </thead>
+            </table>
+          `;
+
   categories.forEach((category) => {
-    let categoryVisible = false; // Track if we have any visible rows within this category
+    html += `
+              <div class="category">
+                <h2 class="category-title">${category.name}</h2>
+              </div>
+            `;
 
-    // Loop through each subcategory within this category
-    const subcategoriesInCategory =
-      category.nextElementSibling.querySelectorAll(".subcategory");
-    subcategoriesInCategory.forEach((subcategory) => {
-      let subcategoryVisible = false; // Track if any item in this subcategory is visible
+    html += '<div class="subcategories-container">';
 
-      // Get all rows within this subcategory
-      const rows = subcategory.querySelectorAll("tr");
-      rows.forEach((row) => {
-        const cells = row.getElementsByTagName("td");
-        let found = false;
+    category.subcategories.forEach((subcategory) => {
+      html += `
+                <div class="subcategory">
+                  ${
+                    subcategory.name
+                      ? `<h2 class="subcategory-title">${subcategory.name}</h2>`
+                      : ""
+                  }
+                  <table class="product-table">
+                    <tbody>
+              `;
 
-        // Check each cell for the search term
-        for (let cell of cells) {
-          if (cell.textContent.toLowerCase().includes(searchTerm)) {
-            found = true;
-            break;
-          }
-        }
-
-        // Show or hide row based on whether it matches search term
-        if (found) {
-          row.classList.remove("hidden");
-          subcategoryVisible = true; // Keep subcategory visible if a match is found
-        } else {
-          row.classList.add("hidden");
-        }
+      subcategory.products.forEach((product) => {
+        html += `
+                  <tr>
+                    <td>${product.brand}</td>
+                    <td>${product.size}</td>
+                    <td>${product.hsCode}</td>
+                    <td>${formatPrice(product.price)}</td>
+                  </tr>
+                `;
       });
 
-      // Show or hide subcategory based on whether any rows are visible
-      if (subcategoryVisible) {
-        subcategory.classList.remove("hidden");
-        categoryVisible = true; // Keep category visible if subcategory has any match
-      } else {
-        subcategory.classList.add("hidden");
-      }
+      html += `
+                    </tbody>
+                  </table>
+                </div>
+              `;
     });
 
-    // Show or hide category based on whether any subcategories are visible
-    if (categoryVisible) {
-      category.classList.remove("hidden");
-    } else {
-      category.classList.add("hidden");
-    }
+    html += "</div>";
   });
-});
+
+  html += "</div>";
+  return html;
+}
+
+// Initialize product list generation
+async function initializeProductList() {
+  const formattedData = await loadCSVData();
+  const generatedHTML = generateProductList(formattedData);
+
+  document.querySelector(".container").innerHTML = generatedHTML;
+}
 
 // Debounce function
 function debounce(func, wait) {
@@ -176,3 +209,74 @@ $(document).ready(function () {
     }, 250) // Adjust debounce wait time (in ms) as needed
   );
 });
+
+// Search function to filter products based on search term
+function searchProducts(term, categories) {
+  const filteredCategories = categories
+    .map((category) => {
+      // Filter subcategories within each category
+      const filteredSubcategories = category.subcategories
+        .map((subcategory) => {
+          // Filter products within each subcategory
+          const filteredProducts = subcategory.products.filter(
+            (product) =>
+              product.brand.toLowerCase().includes(term) ||
+              category.name.toLowerCase().includes(term) ||
+              subcategory.name.toLowerCase().includes(term)
+          );
+
+          // Return subcategory if it has any matching products
+          if (filteredProducts.length) {
+            return {
+              ...subcategory,
+              products: filteredProducts,
+            };
+          }
+          return null;
+        })
+        .filter((subcategory) => subcategory); // Remove null subcategories
+
+      // Return category if it has any matching subcategories
+      if (filteredSubcategories.length) {
+        return {
+          ...category,
+          subcategories: filteredSubcategories,
+        };
+      }
+      return null;
+    })
+    .filter((category) => category); // Remove null categories
+
+  // Return filtered categories or an empty array if no matches are found
+  return filteredCategories.length > 0 ? filteredCategories : [];
+}
+
+// Event listener for search input
+function initializeSearch(categories) {
+  const searchInput = document.getElementById("search");
+  searchInput.addEventListener(
+    "input",
+    debounce(function () {
+      const searchTerm = searchInput.value.toLowerCase().trim();
+      const filteredData = searchTerm
+        ? searchProducts(searchTerm, categories)
+        : categories;
+      const generatedHTML = generateProductList(filteredData);
+      document.querySelector(".container").innerHTML = generatedHTML;
+    }, 300) // Adjust debounce time as needed
+  );
+}
+
+// Modified initializeProductList to include search initialization
+async function initializeProductList() {
+  const formattedData = await loadCSVData();
+  const generatedHTML = generateProductList(formattedData);
+
+  document.querySelector(".container").innerHTML = generatedHTML;
+
+  // Initialize search with loaded data
+  initializeSearch(formattedData);
+}
+
+// Call initialize function on page load
+document.addEventListener("DOMContentLoaded", initializeProductList);

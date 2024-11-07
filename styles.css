@@ -213,7 +213,39 @@ body {
         }
     }
 
+    .heading-search-container {
+        top: -2px;
+    }
+
+    .container {
+        padding-top: 0;
+    }
+
+    .product-table {
+        top: 220px;
+    }
+
+    .product-table th {
+        white-space: nowrap;
+    }
+
     .product-table td:first-child {
         width: 40%;
+    }
+
+    .heading-container {
+        margin-bottom: 32px;
+    }
+
+    .search-container {
+        margin-bottom: 32px;
+    }
+
+    .heading-container * {
+        font-size: 16px;
+    }
+
+    .content * {
+        font-size: 12px;
     }
 }
