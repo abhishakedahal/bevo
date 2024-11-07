@@ -12,12 +12,17 @@ body {
 
 .slider {
     margin: 40px auto;
+
+    .slick-track {
+        gap: 64px;
+    }
 }
 
 .slider img {
     max-width: 170px;
     width: 100%;
     height: auto;
+    margin: 0px 10px;
 }
 
 .slider div {
@@ -26,11 +31,12 @@ body {
     align-items: center;
 }
 
-.heading-search {
+.heading-search-container {
     position: sticky;
     top: 0;
     background-color: white;
     padding: 20px;
+    z-index: 999;
 }
 
 .heading-container {
@@ -76,6 +82,7 @@ body {
     font-size: 20px;
     font-weight: 500;
     color: #0094de;
+    z-index: 1;
 }
 
 .category,
@@ -101,10 +108,17 @@ body {
     background-color: #fef2cb;
 }
 
+.subcategories-container {
+    z-index: 1;
+}
+
 .product-table {
     width: 100%;
     border-collapse: separate;
     border-spacing: 0 8px;
+    position: sticky;
+    top: 300px;
+    z-index: 999;
 }
 
 .product-table th,
@@ -193,6 +207,10 @@ body {
 
     .slider {
         margin: 0px auto;
+
+        .slick-track {
+            gap: 32px;
+        }
     }
 
     .product-table td:first-child {
